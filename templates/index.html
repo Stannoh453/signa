@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signa AI Studio - Assistive Sign Language Translation Platform</title>
+    <!-- Modern Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Ultra-Smooth Apple / Clinical Precision Aesthetic */
+            --bg-body: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-surface-glass: rgba(255, 255, 255, 0.88);
+            --border-color: #e2e8f0;
+            --border-hover: #cbd5e1;
+
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --primary-light: #eff6ff;
+            --primary-border: #bfdbfe;
+
+            --indigo: #4f46e5;
+            --accent-green: #059669;
+            --accent-amber: #d97706;
+            --amber-bg: #fffbe6;
+            --amber-border: #fde68a;
+
+            --accent-red: #dc2626;
+
+            --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.04);
+            --shadow-md: 0 8px 24px -4px rgba(15, 23, 42, 0.08);
+            --shadow-lg: 0 20px 50px -10px rgba(15, 23, 42, 0.14), 0 8px 20px -6px rgba(15, 23, 42, 0.06);
+
+            --font-display: 'Outfit', sans-serif;
+            --font-sans: 'Inter', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ----------------------------------------------------
+           Studio Header Bar (Smooth Rounded Floating Bar)
+           ---------------------------------------------------- */
+        header {
+            width: 100vw;
+            height: 60px;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-logo {
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            object-fit: cover;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .brand-title {
+            font-family: var(--font-display);
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
+        }
+
+        .brand-tag {
+            font-size: 11px;
+            color: var(--text-secondary);
+            background: var(--bg-body);
+            padding: 4px 10px;
+            border-radius: 50px;
+            border: 1px solid var(--border-color);
+            font-weight: 600;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-pill {
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            color: var(--accent-green);
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--accent-green);
+            border-radius: 50%;
+            animation: pulse 1.8s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.85); opacity: 0.8; }
+            50% { transform: scale(1.15); opacity: 1; }
+            100% { transform: scale(0.85); opacity: 0.8; }
+        }
+
+        .btn-header {
+            background: var(--bg-body);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 7px 16px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .btn-header:hover {
+            background: #e2e8f0;
+            color: var(--text-primary);
+            transform: translateY(-1px);
+        }
+
+        /* ----------------------------------------------------
+           Full Screen Workspace Layout
+           ---------------------------------------------------- */
+        .workspace {
+            flex: 1;
+            width: 100vw;
+            height: calc(100vh - 60px);
+            display: flex;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Video Stage (Occupies entire screen) */
+        .video-stage {
+            flex: 1;
+            width: 100%;
+            height: 100%;
+            background: #090d16;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .feed-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Top Stage Warning Banner (Soft Rounded Capsule) */
+        .stage-alert {
+            position: absolute;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 48px);
+            max-width: 850px;
+            background: rgba(255, 251, 230, 0.96);
+            border: 1px solid var(--amber-border);
+            border-radius: 50px;
+            padding: 10px 22px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            box-shadow: var(--shadow-md);
+            backdrop-filter: blur(12px);
+            z-index: 30;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .stage-alert-text {
+            font-size: 12px;
+            color: #92400e;
+            line-height: 1.4;
+        }
+
+        .stage-alert-close {
+            background: none;
+            border: none;
+            color: #b45309;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 2px 8px;
+            border-radius: 50px;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        .stage-alert-close:hover { opacity: 1; background: rgba(180, 83, 9, 0.1); }
+
+        /* Top Overlay Badges (Pill Capsules) */
+        .stage-badges {
+            position: absolute;
+            top: 70px;
+            left: 24px;
+            display: flex;
+            gap: 10px;
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        .stage-badge {
+            background: rgba(15, 23, 42, 0.78);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Floating Bottom Control & Translation Panel (Organic Smooth Radius) */
+        .bottom-panel {
+            position: absolute;
+            bottom: 32px;
+            left: 24px;
+            right: 24px;
+            max-width: 1020px;
+            margin: 0 auto;
+            background: var(--bg-surface-glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(226, 232, 240, 0.9);
+            border-radius: 28px;
+            padding: 20px 24px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            z-index: 30;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .panel-top-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+
+        .gesture-box {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+        }
+
+        .gesture-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .gesture-value {
+            font-family: var(--font-display);
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--accent-green);
+        }
+
+        .spelled-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .spelled-value {
+            font-family: var(--font-display);
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: 1px;
+        }
+
+        /* Predictive Chips Row (Rounded Pills) */
+        .chips-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .chip-btn {
+            background: var(--primary-light);
+            border: 1px solid var(--primary-border);
+            color: var(--primary);
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .chip-btn:hover {
+            background: #dbeafe;
+            color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+        }
+
+        .chip-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Translation Output Sentence Row */
+        .sentence-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .sentence-text {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--text-primary);
+            line-height: 1.4;
+            flex: 1;
+        }
+
+        .sentence-placeholder {
+            color: var(--text-muted);
+            font-style: italic;
+            font-size: 14px;
+            font-weight: 400;
+        }
+
+        .btn-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .btn-action {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 9px 18px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-action:hover {
+            background: var(--bg-body);
+            border-color: var(--border-hover);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-action:active {
+            transform: translateY(0);
+        }
+
+        .btn-speak {
+            background: var(--primary);
+            border: 1px solid var(--primary-hover);
+            color: #ffffff;
+            font-weight: 700;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-speak:hover {
+            background: var(--primary-hover);
+            color: #ffffff;
+            box-shadow: 0 6px 18px rgba(37, 99, 235, 0.4);
+        }
+
+        .btn-clear {
+            background: #fef2f2;
+            border: 1px solid #fca5a5;
+            color: var(--accent-red);
+        }
+
+        .btn-clear:hover { background: #fee2e2; }
+
+        /* ----------------------------------------------------
+           Collapsible Telemetry Sidebar (Smooth Rounded Cards)
+           ---------------------------------------------------- */
+        .sidebar {
+            width: 330px;
+            height: 100%;
+            background: var(--bg-surface);
+            border-left: 1px solid var(--border-color);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            overflow-y: auto;
+            box-shadow: var(--shadow-md);
+            transition: margin-right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 40;
+        }
+
+        .sidebar.collapsed {
+            margin-right: -330px;
+        }
+
+        .sidebar-title {
+            font-family: var(--font-display);
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-primary);
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+            letter-spacing: -0.2px;
+        }
+
+        .metric-card {
+            background: var(--bg-body);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 50px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--indigo) 100%);
+            border-radius: 50px;
+            transition: width 0.15s ease;
+        }
+
+        .range-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 50px;
+            background: #e2e8f0;
+            outline: none;
+        }
+
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+            transition: transform 0.15s;
+        }
+
+        .range-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .spec-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .spec-box {
+            background: var(--bg-body);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .spec-title {
+            font-size: 9px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+        }
+
+        .spec-val {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        /* Flash animation */
+        @keyframes text-flash {
+            0% { color: var(--primary); }
+            100% { color: var(--text-primary); }
+        }
+        .flash-text { animation: text-flash 0.4s ease-out; }
+    </style>
+</head>
+
+<body>
+
+    <!-- Header Bar -->
+    <header>
+        <div class="header-left">
+            <img class="header-logo" src="/static/logo.jpg" alt="Signa Logo" onerror="this.src='/static/logo.png'">
+            <div class="brand-title">Signa AI Studio</div>
+            <div class="brand-tag">Clinical Edition</div>
+        </div>
+        <div class="header-right">
+            <button class="btn-header" onclick="toggleSidebar()" title="Toggle Sidebar Telemetry">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+                <span>Telemetry</span>
+            </button>
+            <button class="btn-header" onclick="toggleFullscreen()" title="Toggle Fullscreen View">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg>
+                <span>Fullscreen</span>
+            </button>
+            <div class="status-pill">
+                <div class="status-dot"></div>
+                <span>ACTIVE ENGINE</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Workspace -->
+    <div class="workspace">
+
+        <!-- Fullscreen Video Stage -->
+        <div class="video-stage">
+            <img class="feed-video" src="/video_feed" alt="Real-time Sign Language Video Feed">
+
+            <!-- Top Stage Alert Banner (Rounded Capsule) -->
+            <div class="stage-alert" id="stage-alert">
+                <div class="stage-alert-text">
+                    <strong>⚠️ Research Preview:</strong> Continuous sequence labeling operates at ~60% error rate during fast transitions. Static letter spelling accuracy is 99.7%.
+                </div>
+                <button class="stage-alert-close" onclick="dismissAlert()">✕</button>
+            </div>
+
+            <!-- Top Overlay Badges (Capsule Pills) -->
+            <div class="stage-badges">
+                <div class="stage-badge" id="pathway-badge">STATIC PATHWAY</div>
+            </div>
+
+            <!-- Floating Bottom Translation & Controls Panel (Smooth 28px Radius Glass Box) -->
+            <div class="bottom-panel">
+                <div class="panel-top-row">
+                    <div class="gesture-box">
+                        <span class="gesture-title">Detected Gesture:</span>
+                        <span class="gesture-value" id="live-gesture">Idle</span>
+                        <span style="font-size:12px; color:var(--text-muted);" id="live-conf"></span>
+                    </div>
+
+                    <div class="spelled-box">
+                        <span class="gesture-title">Spelling Buffer:</span>
+                        <span class="spelled-value" id="spelled-word">Idle</span>
+                    </div>
+
+                    <!-- Predictive Chips -->
+                    <div class="chips-row" id="chips-row"></div>
+                </div>
+
+                <!-- Sentence Output Row -->
+                <div class="sentence-row">
+                    <div class="sentence-text" id="sentence-output">
+                        <span class="sentence-placeholder">Sentence is empty. Perform gestures or spell letters to translate...</span>
+                    </div>
+
+                    <div class="btn-group">
+                        <button class="btn-action btn-speak" id="btn-speak">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
+                            Speak
+                        </button>
+                        <button class="btn-action" id="btn-commit">Commit</button>
+                        <button class="btn-action" id="btn-backspace">Backspace</button>
+                        <button class="btn-action btn-clear" id="btn-clear">Clear</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Telemetry Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <h3 class="sidebar-title">Telemetry & Sensitivity</h3>
+
+            <!-- Motion Energy Progress Bar -->
+            <div class="metric-card">
+                <div class="metric-header">
+                    <span>Wrist Motion Energy</span>
+                    <span id="motion-val" style="color:var(--primary); font-weight:700;">0.0000</span>
+                </div>
+                <div class="progress-track">
+                    <div class="progress-fill" id="motion-bar-fill"></div>
+                </div>
+            </div>
+
+            <!-- Min Confidence Slider -->
+            <div class="metric-card">
+                <div class="metric-header">
+                    <span>Min Confidence</span>
+                    <span id="conf-val" style="color:var(--primary); font-weight:700;">70%</span>
+                </div>
+                <input class="range-slider" type="range" id="conf-slider" min="30" max="95" value="70" step="5">
+            </div>
+
+            <h3 class="sidebar-title" style="margin-top: 10px;">System Metadata</h3>
+
+            <div class="spec-grid">
+                <div class="spec-box">
+                    <span class="spec-title">Model Arch</span>
+                    <span class="spec-val">PyTorch CTC</span>
+                </div>
+                <div class="spec-box">
+                    <span class="spec-title">Vocabulary</span>
+                    <span class="spec-val">47 Classes</span>
+                </div>
+                <div class="spec-box">
+                    <span class="spec-title">Execution</span>
+                    <span class="spec-val">CPU Native</span>
+                </div>
+                <div class="spec-box">
+                    <span class="spec-title">Feature Vector</span>
+                    <span class="spec-val">195 Dims</span>
+                </div>
+            </div>
+
+            <div style="font-size:10px; color:var(--text-muted); margin-top:auto; padding-top:10px; border-top:1px solid var(--border-color);" id="gloss-output">
+                RAW GLOSS: [None]
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const pathwayBadge = document.getElementById('pathway-badge');
+        const liveGesture = document.getElementById('live-gesture');
+        const liveConf = document.getElementById('live-conf');
+        const spelledWord = document.getElementById('spelled-word');
+        const chipsRow = document.getElementById('chips-row');
+        const sentenceOutput = document.getElementById('sentence-output');
+        const glossOutput = document.getElementById('gloss-output');
+        const motionVal = document.getElementById('motion-val');
+        const motionBarFill = document.getElementById('motion-bar-fill');
+        const confVal = document.getElementById('conf-val');
+        const confSlider = document.getElementById('conf-slider');
+        const sidebar = document.getElementById('sidebar');
+
+        // Fullscreen Toggle
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => console.warn(err));
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
+        }
+
+        // Toggle Sidebar
+        function toggleSidebar() {
+            sidebar.classList.toggle('collapsed');
+        }
+
+        // Dismiss Alert Banner
+        function dismissAlert() {
+            document.getElementById('stage-alert').style.display = 'none';
+        }
+
+        // Action Buttons
+        document.getElementById('btn-speak').addEventListener('click', () => triggerApi('/api/speak'));
+        document.getElementById('btn-commit').addEventListener('click', () => triggerApi('/api/commit'));
+        document.getElementById('btn-backspace').addEventListener('click', () => triggerApi('/api/backspace'));
+        document.getElementById('btn-clear').addEventListener('click', () => triggerApi('/api/clear'));
+
+        confSlider.addEventListener('input', (e) => {
+            const val = e.target.value;
+            confVal.textContent = val + '%';
+            triggerApi('/api/config_threshold', { threshold: val / 100 });
+        });
+
+        async function triggerApi(endpoint, data = {}) {
+            try {
+                await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+            } catch (err) {
+                console.error("API Call error:", err);
+            }
+        }
+
+        function acceptSuggestion(word) {
+            triggerApi('/api/accept_suggestion', { word: word });
+        }
+
+        let lastSentence = "";
+        let currentSuggestions = [];
+
+        // Real-time EventSource Stream
+        const eventSource = new EventSource('/stream_state');
+        eventSource.onmessage = function (event) {
+            const state = JSON.parse(event.data);
+
+            // 1. Live Gesture
+            if (state.live_gesture && state.live_gesture !== '?') {
+                liveGesture.textContent = state.live_gesture;
+                liveConf.textContent = `(${(state.confidence * 100).toFixed(0)}%)`;
+            } else {
+                liveGesture.textContent = 'Idle';
+                liveConf.textContent = '';
+            }
+
+            // 2. Pathway Badge
+            pathwayBadge.textContent = state.active_pathway + ' PATHWAY';
+
+            // 3. Spelled Word Buffer
+            if (state.spelled) {
+                spelledWord.textContent = state.spelled.toUpperCase();
+            } else {
+                spelledWord.innerHTML = `<span style="color:var(--text-muted); font-weight:400; font-size:14px;">Idle</span>`;
+            }
+
+            // 4. Word Suggestion Chips
+            const suggestions = state.word_suggestions || [];
+            if (JSON.stringify(suggestions) !== JSON.stringify(currentSuggestions)) {
+                currentSuggestions = suggestions;
+                chipsRow.innerHTML = '';
+                suggestions.forEach(w => {
+                    const chip = document.createElement('button');
+                    chip.className = 'chip-btn';
+                    chip.innerHTML = `<span>${w}</span> <span style="opacity:0.5; font-size:9px;">↵</span>`;
+                    chip.onclick = () => acceptSuggestion(w);
+                    chipsRow.appendChild(chip);
+                });
+            }
+
+            // 5. Decoded Sentence
+            if (state.decoded) {
+                if (state.decoded !== lastSentence) {
+                    sentenceOutput.textContent = state.decoded;
+                    sentenceOutput.className = 'sentence-text flash-text';
+                    lastSentence = state.decoded;
+                    setTimeout(() => { sentenceOutput.className = 'sentence-text'; }, 400);
+                }
+            } else {
+                sentenceOutput.innerHTML = `<span class="sentence-placeholder">Sentence is empty. Perform gestures or spell letters to translate...</span>`;
+                lastSentence = "";
+            }
+
+            // 6. Gloss
+            glossOutput.textContent = state.sentence ? `RAW GLOSS: ${state.sentence.toUpperCase()}` : 'RAW GLOSS: [None]';
+
+            // 7. Motion Energy
+            motionVal.textContent = state.motion_energy.toFixed(4);
+            const ratio = Math.min(1.0, state.motion_energy / state.motion_threshold);
+            motionBarFill.style.width = (ratio * 100) + '%';
+
+            // 8. Confidence Slider Sync
+            const sliderPct = Math.round(state.min_conf * 100);
+            if (parseInt(confSlider.value) !== sliderPct) {
+                confSlider.value = sliderPct;
+                confVal.textContent = sliderPct + '%';
+            }
+        };
+    </script>
+</body>
+
+</html>

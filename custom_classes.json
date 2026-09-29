@@ -1,0 +1,38 @@
+{
+    "hello": {
+        "description": "Salute: Raise flat hand to forehead and move it outward."
+    },
+    "thank_you": {
+        "description": "Flat hand touches lips/chin, then moves down and forward."
+    },
+    "please": {
+        "description": "Flat hand rubs in a circle on the chest."
+    },
+    "sorry": {
+        "description": "Fist rubs in a circle on the chest."
+    },
+    "yes": {
+        "description": "Fist nods up and down at the wrist."
+    },
+    "no": {
+        "description": "Index and middle fingers tap down onto the thumb."
+    },
+    "iloveyou": {
+        "description": "Extend thumb, index, and pinky fingers (horn sign)."
+    },
+    "want": {
+        "description": "hold both your hands just above your chest and do a motion outwards...."
+    },
+    "father": {
+        "description": "hold your arm upwards towards your head..."
+    },
+    "mother": {
+        "description": "same as father but hand is placed between the nose and the upper lip"
+    },
+    "family": {
+        "description": "the middle finger touch and move backwards unti the wrists touch."
+    },
+    "peace": {
+        "description": "hold letter v from the mouth and move it towards your chest"
+    }
+}
